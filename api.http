@@ -1,0 +1,2 @@
+### Infectar usuario
+GET  http://localhost:3000/infect
